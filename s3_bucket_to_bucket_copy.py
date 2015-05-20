@@ -81,7 +81,7 @@ class Worker(threading.Thread):
                         dist_key.set_acl(acl)
                 else:
                     if self.args.verbose:
-                        print '  t%s: Exists and etag matches: %s' % (self.thread_id, new_key)
+                        print '  t%s: Exists and etag matches: %s' % (self.thread_id, dist_key)
                 self.done_count += 1
             except BaseException:
                 logging.exception('  t%s: error during copy' % self.thread_id)
@@ -104,7 +104,7 @@ def copy_bucket(aws_key, aws_secret_key, args):
         (dst_bucket_name, dst_path) = dst.split('/', 1)
     except ValueError:
         dst_bucket_name = dst
-        dst_path = None
+        dst_path = src_path
     src_bucket = conn.get_bucket(src_bucket_name)
 
     if args.verbose:
@@ -168,7 +168,7 @@ if __name__ == "__main__":
     config_fn = j(os.environ['HOME'], '.s3cfg')
 
     parser = argparse.ArgumentParser(description = "s3 bucket to bucket copy")
-    parser.add_argument('-c', '--config', 
+    parser.add_argument('-c', '--config',
                         help="s3 Configuration file. Defaults to ~/.s3cfg",
                         required = False,
                         default = config_fn)
@@ -205,13 +205,13 @@ if __name__ == "__main__":
                         required = False,
                         type = int,
                         default = 20)
-    parser.add_argument('src_bucket', 
+    parser.add_argument('src_bucket',
                         help = "Source s3 bucket name and optional path")
     parser.add_argument('dest_bucket',
                         help = "Destination s3 bucket name")
 
     args = parser.parse_args()
-      
+
     config = ConfigParser.ConfigParser()
     if not config.read(args.config):
         raise EnvironmentError("%s not found. Try running 's3cmd --configure'" % (args.config))
